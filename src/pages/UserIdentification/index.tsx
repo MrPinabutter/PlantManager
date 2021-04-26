@@ -36,7 +36,7 @@ export default function UserIdentification() {
   }
 
   function handleInputChange(value: string) {
-    if(!value) setIsFilled(!value);
+    if(name !== '') setIsFilled(true);
     setName(value);
   }
 

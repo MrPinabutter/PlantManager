@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/core';
 import React from 'react';
 import { 
   View, 
@@ -10,6 +11,12 @@ import colors from '../../styles/colors';
 import fonts from '../../styles/fonts';
 
 export default function Confirmation() {
+
+  const { navigate } = useNavigation()
+
+  function handleMoveOn() {
+    navigate('PlantSelect')
+  }
 
   return(
     <SafeAreaView style={styles.container}>
@@ -27,7 +34,7 @@ export default function Confirmation() {
         </Text>
 
         <View style={styles.footer}>
-          <Button text="Continuar" />
+          <Button text="Continuar" onPress={handleMoveOn} />
         </View>
       </View>
 
