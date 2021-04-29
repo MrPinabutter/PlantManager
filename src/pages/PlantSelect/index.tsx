@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/core';
 import React, { useEffect, useState } from 'react';
 import { 
   View, 
@@ -12,6 +13,7 @@ import EnviromentButton from '../../components/EnviromentButton';
 import Header from '../../components/Header';
 import Load from '../../components/Load';
 import PlantCardPrimary from '../../components/PlantCardPrimary';
+import { PlantProps } from '../../libs/storage';
 
 import api from '../../services/api';
 import colors from '../../styles/colors';
@@ -20,19 +22,6 @@ import fonts from '../../styles/fonts';
 interface EnviromentProps {
   key: string,
   title: string,
-}
-
-interface PlantProps {
-  id: number;
-  name: string;
-  about: string;
-  water_tips: string;
-  photo: string;
-  environments: [string];
-  frequency: {
-    times: number;
-    repeat_every: string;
-  }
 }
 
 export default function PlantSelect() {
@@ -44,12 +33,13 @@ export default function PlantSelect() {
 
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [loadedAll, setLoadingAll] = useState(false);
+
+  const { navigate } = useNavigation()
 
   function handleEnviromentSelected(key: string) {
     setEnvSelected(key);
 
-    if(envSelected == 'all') {
+    if(key === 'all') {
       return setFilteredPlants(plants);
     }
 
@@ -87,6 +77,10 @@ export default function PlantSelect() {
     fetchPlants();
   }
 
+  function handlePlantSelect(plant: PlantProps) {
+    navigate('PlantSave', { plant });
+  }
+
   useEffect(() => {
     async function fetchEnviroment(){
       const { data } = await api.get('plants_environments?_sort=title&order=asc');
@@ -121,6 +115,7 @@ export default function PlantSelect() {
       <View>
         <FlatList 
           data={enviroments}
+          keyExtractor={(item) => item.key + ''}
           renderItem={({item}) => (
             <EnviromentButton 
               title={item.title} 
@@ -137,16 +132,20 @@ export default function PlantSelect() {
       <View style={styles.plants}>
         <FlatList 
           data={filteredPlants}
+          keyExtractor={(item) => item.id + ''}
           renderItem={({item}) => (
-            <PlantCardPrimary data={item} />
+            <PlantCardPrimary 
+              data={item}
+              onPress={() => handlePlantSelect(item)}
+            />
             )}
-            showsVerticalScrollIndicator={false}
-            numColumns={2}
-            onEndReachedThreshold={0.1}
-            onEndReached={({ distanceFromEnd }) => handleFetchMore(distanceFromEnd)}
-            ListFooterComponent={
-              loadingMore ? <ActivityIndicator color={colors.green} /> : <></>
-            }
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          onEndReachedThreshold={0.1}
+          onEndReached={({ distanceFromEnd }) => handleFetchMore(distanceFromEnd)}
+          ListFooterComponent={
+            loadingMore ? <ActivityIndicator color={colors.green} /> : <></>
+          }
         />
       </View>
     </SafeAreaView>
