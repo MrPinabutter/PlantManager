@@ -4,22 +4,45 @@ import {
   Text,
   Image,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import Header from '../../components/Header';
 import colors from '../../styles/colors';
 import waterDrop from '../../assets/waterdrop.png';
 import { FlatList } from 'react-native-gesture-handler';
-import { loadPlants, PlantProps } from '../../libs/storage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadPlants, PlantProps, removePlants, StoragePlantProps } from '../../libs/storage';
 import { formatDistance } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import fonts from '../../styles/fonts';
 import PlantCardSecondary from '../../components/PlantCardSecondary';
+import Load from '../../components/Load';
 
 export default function MyPlants() {
   const [myPlants, setMyPlants] = useState<PlantProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextWater, setNextWatered] = useState('');
+
+  function handleRemove(plant: PlantProps) {
+    Alert.alert('Remover', `Deseja remover a plantinha ${plant.name}?`, [
+      {
+        text: 'Não',
+        style: 'cancel',
+      },
+      {
+        text: 'Sim',
+        onPress: async () => {
+          try{
+            await removePlants(plant.id+'')
+            setMyPlants(old => (
+              old.filter((item) => item.id !== plant.id)
+            ));
+          }catch{
+            Alert.alert("Erro ao remover!")
+          }
+        }
+      }
+    ])
+  }
 
   useEffect(() => {
     async function loadStorageData(){ 
@@ -42,6 +65,8 @@ export default function MyPlants() {
     loadStorageData();
   }, [])
 
+  if(loading) return <Load />;
+
   return(
     <View style={styles.container}>
       <Header />
@@ -63,7 +88,10 @@ export default function MyPlants() {
           data={myPlants}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
-            <PlantCardSecondary data={item} />
+            <PlantCardSecondary 
+              handleRemove={() => handleRemove(item)} 
+              data={item} 
+              />
           )}
           showsVerticalScrollIndicator={false}
         />
